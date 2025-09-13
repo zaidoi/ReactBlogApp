@@ -1,29 +1,42 @@
-import { useState } from 'react'
-import './App.css'
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import authService from "./appwrite/auth";
+import { login, logout } from "./store/authSlice";
+import {Header,Footer} from './components/index'
+
 
 function App() {
-  const [count, setCount] = useState(0)
-console.log(import.meta.env.VITE_APPWRITE_URL);
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
-  return (
-    <>
-      <div>
-        
+  useEffect(() => {
+    authService
+      .getCurrentUser()
+      .then((userData) => {
+        if (userData) {
+          dispatch(login({ userData }));
+        } else {
+          dispatch(logout());
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return !loading ? (
+    <div className="min-h-screen flex flex-wrap content-between bg-gray-400">
+      <div className="w-full block">
+        <Header/>
+        <main>
+         Todo handle {/* <Outlet/> */}
+        </main>
+        <Footer/>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  ) : (
+    <div>
+      <h1>Loading....</h1>
+    </div>
+  );
 }
 
-export default App
+export default App;
